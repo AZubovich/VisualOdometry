@@ -7,6 +7,7 @@ import time
 KITTI_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/image_0'
 times_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/times.txt'
 true_poses_path = '/home/alexandr/Downloads/Odometry/dataset/poses/08.txt'
+calibration_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/calib.txt'
 
 
 true_poses = np.zeros((4071,12))
@@ -24,6 +25,13 @@ for line in file:
 
 file.close()
 
+calibration_data = 0
+file = open(calibration_path, 'r')
+for line in file:
+	calibration = line.split(' ')
+	break
+
+file.close()
 
 count = 0
 sleep_time = 0
