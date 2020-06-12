@@ -1,4 +1,5 @@
 from imutils import paths
+from preprocessing import time_preprocessing, poses_preprocessing, calibration_preprocessing
 import numpy as np
 import cv2
 import imutils
@@ -9,29 +10,12 @@ times_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/times.txt'
 true_poses_path = '/home/alexandr/Downloads/Odometry/dataset/poses/08.txt'
 calibration_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/calib.txt'
 
-
-true_poses = np.zeros((4071,12))
 trajectory = np.zeros((600,800,3))
 
-file = open(times_path, 'r')
-times = file.readlines()
-file.close()
+times = time_preprocessing(times_path)
+true_poses = poses_preprocessing(true_poses_path)
+calibration_data = calibration_preprocessing(calibration_path)
 
-file = open(true_poses_path, 'r')
-i = 0
-for line in file:
-	true_poses[i][:] = line.split(' ')
-	i += 1
-
-file.close()
-
-calibration_data = 0
-file = open(calibration_path, 'r')
-for line in file:
-	calibration = line.split(' ')
-	break
-
-file.close()
 
 count = 0
 sleep_time = 0
