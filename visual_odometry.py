@@ -11,6 +11,7 @@ true_poses_path = '/home/alexandr/Downloads/Odometry/dataset/poses/08.txt'
 calibration_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/calib.txt'
 
 trajectory = np.zeros((600,800,3))
+fast = cv2.FastFeatureDetector_create(threshold=20)
 
 times = time_preprocessing(times_path)
 true_poses = poses_preprocessing(true_poses_path)
@@ -30,7 +31,12 @@ for imagePath in sorted(paths.list_images(KITTI_path)):
 		sleep_time = float(times[count]) - float(times[count - 1])
 
 	time.sleep(sleep_time)
+
 	cv2.imshow("KITTI dataset", img)
+
+	kp = fast.detect(img,None)
+	img1 = cv2.drawKeypoints(img, kp, None, color=(255,0,0))
+	cv2.imshow('Fast algoritm', img1)
 
 	cv2.putText(trajectory, "True position" ,(40, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0,0,255), 1)
 	cv2.putText(trajectory, "Estimated position", (40, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0,255,0), 1)
@@ -40,6 +46,7 @@ for imagePath in sorted(paths.list_images(KITTI_path)):
 		end_point = (int(round(true_poses[count][3] + 400)), int(round(true_poses[count][11] + 100)))
 
 	trajectory = cv2.line(trajectory, start_point, end_point, (0, 0, 255), 1)
+	
 	cv2.imshow("trajectory", trajectory)
 
 	print(f'True x : {true_poses[count][3]}, y : {true_poses[count][7]}, z: {true_poses[count][11]}')
