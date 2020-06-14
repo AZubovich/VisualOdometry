@@ -10,8 +10,21 @@ times_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/times.txt'
 true_poses_path = '/home/alexandr/Downloads/Odometry/dataset/poses/08.txt'
 calibration_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/calib.txt'
 
+
+def FAST_detect(fast, img):
+	kp = fast.detect(img,None)
+	img1 = cv2.drawKeypoints(img, kp, None, color=(0,255,0))
+	cv2.imshow('FAST algorithm', img1)
+
+def ORB_detect(orb, img):
+	kp, des = orb.detectAndCompute(img,None)
+	img1 = cv2.drawKeypoints(img, kp, None, color=(0,255,0))
+	cv2.imshow('ORB algorithm', img1)
+
+
 trajectory = np.zeros((600,800,3))
 fast = cv2.FastFeatureDetector_create(threshold=20)
+orb = cv2.ORB_create()
 
 times = time_preprocessing(times_path)
 true_poses = poses_preprocessing(true_poses_path)
@@ -34,9 +47,8 @@ for imagePath in sorted(paths.list_images(KITTI_path)):
 
 	cv2.imshow("KITTI dataset", img)
 
-	kp = fast.detect(img,None)
-	img1 = cv2.drawKeypoints(img, kp, None, color=(255,0,0))
-	cv2.imshow('Fast algoritm', img1)
+	FAST_detect(fast, img)
+	#ORB_detect(orb, img)
 
 	cv2.putText(trajectory, "True position" ,(40, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0,0,255), 1)
 	cv2.putText(trajectory, "Estimated position", (40, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0,255,0), 1)
