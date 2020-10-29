@@ -11,7 +11,7 @@ times_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/times.txt'
 true_poses_path = '/home/alexandr/Downloads/Odometry/dataset/poses/08.txt'
 calibration_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/calib.txt'
 
-trajectory = np.zeros((600,800,3))
+trajectory = np.zeros((800,800,3))
 
 times = time_preprocessing(times_path)
 true_poses = poses_preprocessing(true_poses_path)
@@ -36,7 +36,7 @@ for imagePath in sorted(paths.list_images(KITTI_path)):
 		start_point = (int(round(true_poses[count - 1][3] + 400)), int(round(true_poses[count -1 ][11] + 100)))
 		end_point = (int(round(true_poses[count][3] + 400)), int(round(true_poses[count][11] + 100)))
 
-	time.sleep(sleep_time)
+	#time.sleep(sleep_time)
 
 	cv2.imshow("KITTI dataset", img)
 
@@ -49,7 +49,7 @@ for imagePath in sorted(paths.list_images(KITTI_path)):
 		vo.perform(img, count)
 		est_coord = vo.estimate_coordinates()
 		#print(vo.MSE_error(est_coord))
-		est_end_point = (int(round(est_coord[0] + 400)), int(round(est_coord[2] + 100)))
+		est_end_point = (int(round(est_coord[0][0] + 400)), int(round(est_coord[2][0] + 100)))
 
 
 	trajectory = cv2.line(trajectory, start_point, end_point, (0, 0, 255), 1)
@@ -66,5 +66,6 @@ for imagePath in sorted(paths.list_images(KITTI_path)):
 	count += 1
 	est_start_point = est_end_point
 
+cv2.imwrite('trajectory.png', trajectory)
 cv2.destroyAllWindows()
 	
