@@ -11,7 +11,7 @@ times_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/times.txt'
 true_poses_path = '/home/alexandr/Downloads/Odometry/dataset/poses/08.txt'
 calibration_path = '/home/alexandr/Downloads/Odometry/dataset/sequences/08/calib.txt'
 
-trajectory = np.zeros((800,800,3))
+trajectory = np.zeros((800,1200,3))
 
 times = time_preprocessing(times_path)
 true_poses = poses_preprocessing(true_poses_path)
@@ -26,7 +26,7 @@ end_point = (int(round(true_poses[count][3] + 400)), int(round(true_poses[count]
 
 est_start_point = start_point
 est_end_point = end_point
-
+start_time = int(round(time.time()))
 
 for imagePath in sorted(paths.list_images(KITTI_path)):
 	img = cv2.imread(imagePath)
@@ -48,7 +48,8 @@ for imagePath in sorted(paths.list_images(KITTI_path)):
 	else:
 		vo.perform(img, count)
 		est_coord = vo.estimate_coordinates()
-		#print(vo.MSE_error(est_coord))
+		vo.MSE_error(est_coord)
+		#print(f'Est x : {est_coord[0][0]}, y: {est_coord[1][0]} z: {est_coord[2][0]}')
 		est_end_point = (int(round(est_coord[0][0] + 400)), int(round(est_coord[2][0] + 100)))
 
 
@@ -66,6 +67,11 @@ for imagePath in sorted(paths.list_images(KITTI_path)):
 	count += 1
 	est_start_point = est_end_point
 
-cv2.imwrite('trajectory.png', trajectory)
+result = int(round(time.time())) - start_time
+mse = vo.count_average_mse()
+cv2.putText(trajectory, "Time: %i seconds" %(result) ,(250, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 0, 0), 1)
+cv2.putText(trajectory, "MSE: %f" %(mse) ,(250, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255, 0, 0), 1)
+
+cv2.imwrite('trajectory_temp.png', trajectory)
 cv2.destroyAllWindows()
 	

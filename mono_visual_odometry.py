@@ -11,17 +11,21 @@ class MonoVisualOdometry:
 		self.old_image = None
 		self.new_image = None
 		self.key_points = None
-		self.R = None #np.zeros(shape=(3, 3))
-		self.t = None #np.zeros(shape=(3, 3))
-		self.fast = cv2.FastFeatureDetector_create(threshold=20)
-		self.orb = cv2.ORB_create()
-		self.lk_params = dict( winSize  = (21,21), maxLevel = 3, 
+		self.mse = 0
+		self.R = None
+		self.t = None
+		self.fast = cv2.FastFeatureDetector_create(threshold=10)
+		self.orb = cv2.ORB_create(nfeatures = 4000, edgeThreshold = 20, patchSize = 20)
+		self.lk_params = dict( winSize  = (21,21),
+		    maxLevel = 3, 
 			criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01))
 
 	def initial_image(self, img, count):
 		self.new_image = img
 		self.count = count
-		self.FAST_detector(img)
+		#self.FAST_detector(img)
+		#self.ORB_detector(img)
+		self.Shi_Tomasi_detector(img)
 
 	def perform(self, img, count):
 		self.old_image = self.new_image
@@ -32,19 +36,25 @@ class MonoVisualOdometry:
 	def FAST_detector(self,img):
 		kp = self.fast.detect(img,None)
 		self.key_points = np.array([x.pt for x in kp], dtype=np.float32)
+		#print(self.key_points.shape[0])
 
 	def ORB_detector(self, img):
-		kp, des = self.orb.detectAndCompute(img,None)
-		self.key_points = np.array([x.pt for x in kp], dtype=np.float32).reshape(-1, 1, 2)
+		kp, des = self.orb.detectAndCompute(img, None)
+		self.key_points = np.array([x.pt for x in kp], dtype=np.float32)
+		#print(self.key_points.shape[0])
 
 	def Shi_Tomasi_detector(self,img):
 		gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-		corners = cv2.goodFeaturesToTrack(gray,25,0.01,10)
-		self.key_points = np.array([x for x in corners], dtype=np.float32).reshape(-1, 1, 2)
+		corners = cv2.goodFeaturesToTrack(gray,2000,0.04,10)
+		self.key_points = np.array([x for x in corners], dtype=np.float32)
+		print(self.key_points.shape[0])
 
 	def LKT_optical_flow(self):
-		if self.key_points.shape[0] < 2000:
-			self.FAST_detector(self.old_image)
+		#print(self.key_points.shape[0])
+		if self.key_points.shape[0] < 550:
+			#self.FAST_detector(self.old_image)
+			#self.ORB_detector(self.old_image)
+			self.Shi_Tomasi_detector(self.old_image)
 
 		p1, st, err = cv2.calcOpticalFlowPyrLK(self.old_image, self.new_image, self.key_points, None, **self.lk_params)
 		#p2, st, err = cv2.calcOpticalFlowPyrLK(self.new_image, self.old_image, p1, None, **self.lk_params)
@@ -88,8 +98,10 @@ class MonoVisualOdometry:
 		z = self.true_poses[self.count][11]
 
 		truth = np.array([[x], [y], [z]])
+		self.mse += np.linalg.norm(truth - estimated)
 
-		return np.linalg.norm(truth - estimated)
+	def count_average_mse(self):
+		return self.mse/(self.count+1)
 
 	def compute_scale(self):
 		x_prev = self.true_poses[self.count-1][3]
